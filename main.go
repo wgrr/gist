@@ -38,7 +38,7 @@ func main() {
 	log.SetPrefix("gist: ")
 	log.SetFlags(0)
 
-	upass := strings.Split(":", auth)
+	upass := strings.Split(auth, ":")
 	if len(upass) < 2 {
 		log.Printf("env: %q expected user:secret, got: %q", envar, auth)
 		flag.Usage()
