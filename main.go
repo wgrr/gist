@@ -1,3 +1,19 @@
+// Gist can uploads files or data streams to github gist
+// service.
+//
+// Usage:
+//
+//     gist foo.go bar.go
+//     echo baz | gist
+//
+// The gist file name will the same as it's on disk, if the
+// file is stdin, it'll be named <stdin>.
+//
+// In order to upload files, it's required a username along
+// with an oauth token that you can grab from github, gist
+// will read both from GISTAUTH environment variable column
+// separated, thus "foo:deadbeef" represents user foo and
+// token deadbeef.
 package main
 
 import (
