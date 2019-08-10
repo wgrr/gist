@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -27,6 +28,7 @@ type url struct {
 }
 
 const envar = "GISTAUTH"
+
 var auth = os.Getenv(envar)
 
 func main() {
@@ -57,10 +59,13 @@ func main() {
 	for _, name := range flag.Args() {
 		b, err := ioutil.ReadFile(name)
 		if err != nil {
-			log.Println("gist:", err)
+			log.Println(err)
 			continue
 		}
 		f.Files[name] = content{string(b)}
+	}
+	if len(f.Files) == 0 {
+		os.Exit(1)
 	}
 Do:
 	js, err := json.Marshal(f)
@@ -82,10 +87,23 @@ Do:
 		log.Fatal(err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusCreated {
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Fatalf("refused by github: body: %v", err)
+		}
+		log.Fatalf("refused by github: body: %s", b)
+	}
 	var inc url
-	err = json.NewDecoder(resp.Body).Decode(&inc)
-	if err != nil {
-		log.Fatal(err)
+	dec := json.NewDecoder(resp.Body)
+	for {
+		err = dec.Decode(&inc)
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 	fmt.Println(inc.URL)
 }
